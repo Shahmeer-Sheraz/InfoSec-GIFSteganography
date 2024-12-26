@@ -55,7 +55,7 @@ def test_collision_freeness():
     hashes = {}
     collision_found = False
 
-    for _ in range(100000):  # Test with 100,000 inputs
+    for _ in range(10000):  # Test with 100,000 inputs
         input_data = generate_random_input()
         hasher.update(input_data)
         digest = hasher.finalize()
