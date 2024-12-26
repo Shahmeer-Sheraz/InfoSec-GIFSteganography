@@ -6,7 +6,6 @@ from PIL import Image
 from stegano import lsb
 from cryptography.fernet import Fernet
 from django.core.files.base import ContentFile
-from core.custom_hash import compute_hash
 
 def generate_key_from_password(pass_key: str) -> bytes:
     """Generate a consistent Fernet key from password"""
@@ -14,21 +13,15 @@ def generate_key_from_password(pass_key: str) -> bytes:
     return base64.urlsafe_b64encode(key)
 
 def encrypt_and_embed_message(gif_file, secret_message: str, pass_key: str) -> bytes:
-    """Encrypt and embed message and its hash in the first frame of an animated GIF."""
+    """Encrypt and embed message in first frame of animated GIF"""
     try:
         # Generate encryption key from pass_key
         key = generate_key_from_password(pass_key)
         fernet = Fernet(key)
         
-        # Compute hash of the message
-        message_hash = compute_hash(secret_message)
-        
-        # Encrypt the message and hash
+        # Encrypt the message
         encrypted_message = fernet.encrypt(secret_message.encode())
-        encrypted_hash = fernet.encrypt(message_hash.encode())
         
-        # Combine encrypted message and hash with a delimiter
-        combined_data = f"{encrypted_message.hex()}::{encrypted_hash.hex()}"        
         # Open GIF and get frames
         with Image.open(gif_file) as gif:
             if not getattr(gif, "is_animated", False):
@@ -50,8 +43,8 @@ def encrypt_and_embed_message(gif_file, secret_message: str, pass_key: str) -> b
             if frames[0].mode != 'RGB':
                 frames[0] = frames[0].convert('RGB')
 
-            # Embed encrypted data in the first frame
-            frames[0] = lsb.hide(frames[0], combined_data)
+            # Embed encrypted message in first frame
+            frames[0] = lsb.hide(frames[0], encrypted_message.hex())
 
             # Save as animated GIF
             output = io.BytesIO()
