@@ -115,7 +115,7 @@ def test_second_preimage_resistance():
     if not found:
         print("No second preimage found after 1,000,000 attempts.")
 
-# Main function to run all tests
+# Main function to run all testsorigi
 def main():
     test_collision_freeness()
     test_preimage_resistance()
